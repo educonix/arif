@@ -127,3 +127,13 @@ CREATE TABLE IF NOT EXISTS public.site_content (
   content jsonb NOT NULL DEFAULT '{}'::jsonb,
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+CREATE TABLE IF NOT EXISTS public.storage_files (
+  bucket text NOT NULL,
+  path text NOT NULL,
+  content_type text,
+  data_base64 text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (bucket, path)
+);

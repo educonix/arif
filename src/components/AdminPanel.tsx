@@ -11,7 +11,7 @@ export const AdminPanel = () => {
 
   const handleUpdate = async (key: string, value: string) => {
     if (!supabase) {
-      alert('Supabase is not configured.');
+      alert('Admin service is not configured.');
       return;
     }
     const { error } = await supabase

@@ -9,7 +9,7 @@ export const AdminLoginModal = ({ onClose, onLoginSuccess }: { onClose: () => vo
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supabase) {
-      setError('Supabase is not configured.');
+      setError('Admin service is not configured.');
       return;
     }
     const { error } = await supabase.auth.signInWithPassword({ email, password });
