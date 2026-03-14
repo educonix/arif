@@ -1,0 +1,359 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", sans-serif;
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+:root {
+  --theme-bg-primary: #ffffff;
+  --theme-bg-secondary: #f8fafc;
+  --theme-bg-tertiary: #f1f5f9;
+  --theme-bg-elevated: #1e293b;
+  --theme-text-primary: #0f172a;
+  --theme-text-secondary: #334155;
+  --theme-text-muted: #64748b;
+  --theme-link: #047857;
+}
+
+.dark-mode {
+  --theme-bg-primary: #0f172a;
+  --theme-bg-secondary: #111827;
+  --theme-bg-tertiary: #1f2937;
+  --theme-bg-elevated: #334155;
+  --theme-text-primary: #e2e8f0;
+  --theme-text-secondary: #cbd5e1;
+  --theme-text-muted: #94a3b8;
+  --theme-link: #6ee7b7;
+}
+
+body {
+  background: var(--theme-bg-primary);
+  color: var(--theme-text-primary);
+}
+
+.dark-mode body,
+.dark-mode [class*='bg-white'] {
+  background-color: var(--theme-bg-primary) !important;
+}
+
+.dark-mode [class*='bg-slate-50'] {
+  background-color: var(--theme-bg-secondary) !important;
+}
+
+.dark-mode [class*='bg-slate-100'],
+.dark-mode [class*='bg-slate-200'],
+.dark-mode [class*='bg-slate-300'] {
+  background-color: var(--theme-bg-tertiary) !important;
+}
+
+.dark-mode [class*='bg-slate-700'],
+.dark-mode [class*='bg-slate-800'],
+.dark-mode [class*='bg-slate-900'],
+.dark-mode [class*='bg-slate-950'] {
+  background-color: var(--theme-bg-elevated) !important;
+}
+
+.dark-mode [class*='text-slate-950'],
+.dark-mode [class*='text-slate-900'],
+.dark-mode [class*='text-slate-800'] {
+  color: var(--theme-text-primary) !important;
+}
+
+.dark-mode [class*='text-slate-700'],
+.dark-mode [class*='text-slate-600'],
+.dark-mode [class*='text-slate-500'] {
+  color: var(--theme-text-secondary) !important;
+}
+
+.dark-mode [class*='text-slate-400'],
+.dark-mode [class*='text-slate-300'] {
+  color: var(--theme-text-muted) !important;
+}
+
+.dark-mode .academic-content {
+  color: var(--theme-text-secondary);
+}
+
+.dark-mode .academic-content h2,
+.dark-mode .academic-content h3,
+.dark-mode .blog-content h1,
+.dark-mode .blog-content h2,
+.dark-mode .blog-content h3 {
+  color: var(--theme-text-primary);
+}
+
+.dark-mode .blog-content a {
+  color: var(--theme-link);
+}
+
+.dark-mode .academic-block,
+.dark-mode .academic-proof,
+.dark-mode .equation-error {
+  background: var(--theme-bg-tertiary);
+}
+
+.dark-mode .equation-number,
+.dark-mode .academic-figure figcaption,
+.dark-mode .academic-references {
+  color: var(--theme-text-muted);
+}
+
+.theme-toggle-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  border-radius: 9999px;
+  padding: 0.3rem 0.7rem 0.3rem 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle-button:hover {
+  border-color: #94a3b8;
+}
+
+.theme-toggle-button:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
+
+.theme-toggle-button .theme-toggle-icon {
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.theme-toggle-button.is-dark {
+  border-color: #334155;
+  background: #111827;
+  color: #e2e8f0;
+}
+
+.theme-toggle-button.is-dark .theme-toggle-icon {
+  background: #1f2937;
+  color: #f8fafc;
+}
+
+/* Blog Content Styles */
+.blog-content img, .academic-content img {
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: 1rem;
+  margin: 2rem auto;
+  display: block;
+}
+
+.blog-content iframe, .academic-content iframe {
+  width: 100% !important;
+  aspect-ratio: 16 / 9;
+  height: auto !important;
+  border-radius: 1rem;
+  margin: 2rem 0;
+}
+
+/* Academic Research Styles */
+.academic-content {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  color: #1e293b;
+}
+
+.academic-content h2 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-top: 3.5rem;
+  margin-bottom: 1.5rem;
+  scroll-margin-top: 100px;
+}
+
+.academic-content h3 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+/* Academic Theorem & Math Styles */
+.academic-content .theorem {
+  @apply bg-slate-50 border-l-4 border-emerald-600 p-4 my-6 rounded-r-lg italic;
+}
+.academic-content .lemma {
+  @apply bg-slate-50 border-l-4 border-blue-600 p-4 my-6 rounded-r-lg italic;
+}
+.academic-content .proof {
+  @apply my-6;
+}
+.academic-content .definition {
+  @apply bg-slate-50 border-l-4 border-amber-500 p-4 my-6 rounded-r-lg;
+}
+.academic-content .katex-display {
+  @apply my-8 overflow-x-auto overflow-y-hidden pb-2;
+}
+
+/* Equation Styling */
+.equation-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 2.5rem 0;
+  position: relative;
+  width: 100%;
+  overflow-x: auto;
+  padding: 1rem 0;
+}
+
+.equation-content {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.equation-number {
+  position: absolute;
+  right: 0;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.equation-error {
+  color: #ef4444;
+  background: #fef2f2;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+}
+
+/* Academic Blocks */
+.academic-block {
+  margin: 2.5rem 0;
+  padding: 2rem;
+  border-radius: 1.5rem;
+  border-left: 4px solid;
+  background: #f8fafc;
+  position: relative;
+}
+
+.academic-label {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.75rem;
+  margin-bottom: 1rem;
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.5rem;
+}
+
+.academic-theorem { border-color: #059669; }
+.academic-theorem .academic-label { background: #ecfdf5; color: #059669; }
+
+.academic-definition { border-color: #0284c7; }
+.academic-definition .academic-label { background: #f0f9ff; color: #0284c7; }
+
+.academic-lemma { border-color: #7c3aed; }
+.academic-lemma .academic-label { background: #f5f3ff; color: #7c3aed; }
+
+.academic-proof { border-color: #64748b; background: #f1f5f9; }
+.academic-proof .academic-label { background: #e2e8f0; color: #64748b; }
+
+/* Figures */
+.academic-figure {
+  margin: 3rem 0;
+  text-align: center;
+}
+
+.academic-figure img {
+  margin: 0 auto 1rem !important;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+.academic-figure figcaption {
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: #64748b;
+  font-style: italic;
+  max-width: 80%;
+  margin: 0 auto;
+}
+
+/* References */
+.academic-references {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  font-size: 0.9375rem;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.academic-references li {
+  margin-bottom: 0.75rem;
+  padding-left: 0.5rem;
+}
+
+/* KaTeX Overrides for Mobile */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5rem 0;
+}
+
+@media (max-width: 768px) {
+  .equation-number {
+    position: static;
+    margin-top: 0.5rem;
+    text-align: right;
+    width: 100%;
+  }
+  
+  .equation-wrapper {
+    flex-direction: column;
+  }
+}
+
+.blog-content p {
+  margin-bottom: 1.5rem;
+}
+
+.blog-content a {
+  color: #047857;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.blog-content h1, .blog-content h2, .blog-content h3 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.blog-content h2 { font-size: 1.875rem; }
+.blog-content h3 { font-size: 1.5rem; }

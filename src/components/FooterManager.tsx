@@ -1,0 +1,183 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { supabase } from '../services/supabaseClient';
+import { Upload, Save, Image as ImageIcon, X } from 'lucide-react';
+import { ImageCropperModal } from './ImageCropperModal';
+
+export const FooterManager = ({ settings, onUpdate }: { settings: any, onUpdate: () => void }) => {
+  const [localSettings, setLocalSettings] = useState(settings || {});
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [selectedImageSrc, setSelectedImageSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (settings) {
+      setLocalSettings(settings);
+    }
+  }, [settings]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        setSelectedImageSrc(reader.result?.toString() || null);
+        setCropModalOpen(true);
+      });
+      reader.readAsDataURL(file);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
+    setCropModalOpen(false);
+    setSelectedImageSrc(null);
+    if (!supabase) return;
+    
+    setUploading(true);
+    const fileExt = 'jpeg';
+    const fileName = `footer-profile-${Math.random().toString(36).substring(2)}.${fileExt}`;
+    const filePath = `footer/${fileName}`;
+
+    try {
+      const { error: uploadError } = await supabase.storage
+        .from('footer_photo')
+        .upload(filePath, croppedBlob);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('footer_photo')
+        .getPublicUrl(filePath);
+
+      setLocalSettings({ ...localSettings, footer_profile_image: publicUrl });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Error uploading image. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const save = async () => {
+    setLoading(true);
+    // Ensure we are updating the existing row. 
+    // Usually site_settings has a single row, often with id 1 or similar.
+    // If settings has an id, we use it.
+    const { error } = await supabase.from('site_settings').upsert(localSettings);
+    
+    if (error) {
+      alert('Error saving settings: ' + error.message);
+    } else {
+      alert('Footer settings saved successfully!');
+      onUpdate();
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="space-y-8">
+      <div className="border-b border-slate-100 pb-6">
+        <h2 className="text-2xl font-bold text-slate-900">Footer Settings</h2>
+        <p className="text-slate-500 mt-1">Update your footer motto and profile image.</p>
+      </div>
+      
+      <div className="space-y-6">
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Motto</label>
+          <textarea 
+            value={localSettings.motto || ''} 
+            onChange={(e) => setLocalSettings({...localSettings, motto: e.target.value})} 
+            className="w-full border border-slate-200 rounded-xl p-3.5 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none" 
+            rows={4}
+            placeholder="Enter your footer motto..."
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">Footer Profile Image</label>
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+            <div className="relative w-32 h-32 rounded-full overflow-hidden bg-slate-100 border border-slate-200 flex-shrink-0">
+              {localSettings.footer_profile_image ? (
+                <img 
+                  src={localSettings.footer_profile_image} 
+                  alt="Footer Profile" 
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-slate-300">
+                  <ImageIcon className="w-10 h-10" />
+                </div>
+              )}
+              {uploading && (
+                <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600"></div>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex-1 space-y-3 text-center sm:text-left">
+              <p className="text-sm text-slate-500">
+                This image will be displayed in the footer section. Recommended format: square (e.g. 400x400px).
+              </p>
+              <div className="flex flex-wrap justify-center sm:justify-start gap-3">
+                <button 
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all"
+                >
+                  <Upload className="w-4 h-4" />
+                  Upload New
+                </button>
+                {localSettings.footer_profile_image && (
+                  <button 
+                    type="button"
+                    onClick={() => setLocalSettings({...localSettings, footer_profile_image: ''})}
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold text-red-600 hover:bg-red-50 transition-all"
+                  >
+                    <X className="w-4 h-4" />
+                    Remove
+                  </button>
+                )}
+              </div>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileSelect} 
+                accept="image/*" 
+                className="hidden" 
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {selectedImageSrc && (
+        <ImageCropperModal
+          isOpen={cropModalOpen}
+          imageSrc={selectedImageSrc}
+          aspectRatio={1} // 1:1 for footer profile image
+          circularCrop={true}
+          onClose={() => {
+            setCropModalOpen(false);
+            setSelectedImageSrc(null);
+          }}
+          onCropComplete={handleCropComplete}
+        />
+      )}
+
+      <div className="pt-6 border-t border-slate-100 flex justify-end">
+        <button 
+          onClick={save} 
+          disabled={loading || uploading} 
+          className="px-8 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 shadow-md shadow-emerald-600/20 flex items-center gap-2"
+        >
+          <Save className="w-5 h-5" />
+          {loading ? 'Saving...' : 'Save Changes'}
+        </button>
+      </div>
+    </div>
+  );
+};
