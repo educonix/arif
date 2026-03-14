@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'motion/react';
 import { useSliderAutoPlay } from './hooks/useSliderAutoPlay';
-import { supabase } from './services/supabaseClient';
 import { AdminPanel } from './components/AdminPanel';
 import { AdminLoginModal } from './components/AdminLoginModal';
 import { AdminDashboard } from './components/AdminDashboard';
@@ -554,95 +553,109 @@ export default function App() {
   // Fetch blog and research posts from Blogger
   useEffect(() => {
     const fetchSiteContent = async () => {
-      if (!supabase) return;
-      const { data, error } = await supabase.from('site_settings').select('*').single();
-      if (data) {
-        setSiteContent(data);
+      try {
+        const response = await fetch('/api/site-settings');
+        if (!response.ok) throw new Error(`Site settings request failed: ${response.status}`);
+        const data = await response.json();
+        if (data && Object.keys(data).length > 0) {
+          setSiteContent(data);
+        }
+      } catch (error) {
+        console.error('Error fetching site settings:', error);
       }
     };
-    fetchSiteContent();
 
     const fetchEducation = async () => {
-      if (!supabase) return;
-      const { data, error } = await supabase
-        .from('education_table')
-        .select('*')
-        .order('sort_order', { ascending: true });
-      
-      if (data && data.length > 0) {
-        setEducation(data.map(item => ({
-          degree: item.title,
-          institution: item.institution,
-          group: item.group_name,
-          year: item.year,
-          result: item.result
-        })));
-      } else {
+      try {
+        const response = await fetch('/api/education');
+        if (!response.ok) throw new Error(`Education request failed: ${response.status}`);
+        const data = await response.json();
+
+        if (Array.isArray(data) && data.length > 0) {
+          setEducation(data.map((item: any) => ({
+            degree: item.title,
+            institution: item.institution,
+            group: item.group_name,
+            year: item.year,
+            result: item.result
+          })));
+        } else {
+          setEducation(EDUCATION);
+        }
+      } catch (error) {
+        console.error('Error fetching education:', error);
         setEducation(EDUCATION);
+      } finally {
+        setLoadingEducation(false);
       }
-      setLoadingEducation(false);
     };
-    fetchEducation();
 
     const fetchProjects = async () => {
-      if (!supabase) return;
-      const { data, error } = await supabase
-        .from('projects_table')
-        .select('*')
-        .eq('is_visible', true)
-        .order('sort_order', { ascending: true });
-      
-      if (data && data.length > 0) {
-        setProjects(data.map(item => ({
-          title: item.title,
-          description: item.short_description,
-          fullDescription: item.full_description,
-          image: item.cover_image,
-          link: item.project_url
-        })));
-      } else {
+      try {
+        const response = await fetch('/api/projects');
+        if (!response.ok) throw new Error(`Projects request failed: ${response.status}`);
+        const data = await response.json();
+
+        if (Array.isArray(data) && data.length > 0) {
+          setProjects(data.map((item: any) => ({
+            title: item.title,
+            description: item.short_description,
+            fullDescription: item.full_description,
+            image: item.cover_image,
+            link: item.project_url
+          })));
+        } else {
+          setProjects(PROJECTS);
+        }
+      } catch (error) {
+        console.error('Error fetching projects:', error);
         setProjects(PROJECTS);
+      } finally {
+        setLoadingProjects(false);
       }
-      setLoadingProjects(false);
     };
-    fetchProjects();
 
     const fetchGallery = async () => {
-      if (!supabase) return;
-      const { data, error } = await supabase
-        .from('gallery_table')
-        .select('*')
-        .eq('is_visible', true)
-        .order('photo_date', { ascending: false })
-        .order('sort_order', { ascending: true });
-      
-      if (data && data.length > 0) {
-        setGallery(data.map(item => ({
-          id: item.id,
-          image: item.image_url,
-          caption: item.caption,
-          date: item.photo_date
-        })));
-      } else {
+      try {
+        const response = await fetch('/api/gallery');
+        if (!response.ok) throw new Error(`Gallery request failed: ${response.status}`);
+        const data = await response.json();
+
+        if (Array.isArray(data) && data.length > 0) {
+          setGallery(data.map((item: any) => ({
+            id: item.id,
+            image: item.image_url,
+            caption: item.caption,
+            date: item.photo_date
+          })));
+        } else {
+          setGallery(GALLERY_ITEMS);
+        }
+      } catch (error) {
+        console.error('Error fetching gallery:', error);
         setGallery(GALLERY_ITEMS);
+      } finally {
+        setLoadingGallery(false);
       }
-      setLoadingGallery(false);
     };
-    fetchGallery();
 
     const fetchAcademicPapers = async () => {
-      if (!supabase) return;
-      const { data, error } = await supabase
-        .from('research_papers')
-        .select('*')
-        .eq('status', 'published')
-        .order('published_at', { ascending: false, nullsFirst: false })
-        .order('created_at', { ascending: false });
-      
-      if (!error && data) {
-        setAcademicPapers(data);
+      try {
+        const response = await fetch('/api/research-papers');
+        if (!response.ok) throw new Error(`Research papers request failed: ${response.status}`);
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setAcademicPapers(data);
+        }
+      } catch (error) {
+        console.error('Error fetching research papers:', error);
       }
     };
+
+    fetchSiteContent();
+    fetchEducation();
+    fetchProjects();
+    fetchGallery();
     fetchAcademicPapers();
 
     const fetchData = async () => {
