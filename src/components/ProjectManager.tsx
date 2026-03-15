@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../services/supabaseClient';
+import { db } from '../services/dbClient';
 import { Plus, Trash2, Edit2, Save, X, Upload, Eye, EyeOff, ExternalLink, Image } from 'lucide-react';
 import { ImageCropperModal } from './ImageCropperModal';
 
@@ -26,7 +26,7 @@ export const ProjectManager = () => {
 
   const fetchEntries = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('projects_table')
       .select('*')
       .order('sort_order', { ascending: true });
@@ -54,14 +54,14 @@ export const ProjectManager = () => {
 
       if (entry.id) {
         console.log('Updating project with ID:', entry.id);
-        const { error } = await supabase.from('projects_table').update(submissionData).eq('id', entry.id);
+        const { error } = await db.from('projects_table').update(submissionData).eq('id', entry.id);
         if (error) throw error;
         alert('Project updated!');
         setEditingEntry(null);
         fetchEntries();
       } else {
         console.log('Adding new project');
-        const { error } = await supabase.from('projects_table').insert([submissionData]);
+        const { error } = await db.from('projects_table').insert([submissionData]);
         if (error) throw error;
         alert('Project added!');
         setIsAdding(false);
@@ -76,8 +76,8 @@ export const ProjectManager = () => {
   };
 
   const handleDelete = async (id: any) => {
-    if (!supabase) {
-      console.error('Supabase client not initialized');
+    if (!db) {
+      console.error('Database client not initialized');
       return;
     }
     if (confirm('Are you sure you want to delete this project?')) {
@@ -94,7 +94,7 @@ export const ProjectManager = () => {
             const path = project.cover_image.split('project_cover/').pop();
             if (path) {
               console.log('Deleting project image from storage:', path);
-              const { error: storageError } = await supabase.storage
+              const { error: storageError } = await db.storage
                 .from('project_cover')
                 .remove([path]);
               if (storageError) {
@@ -109,10 +109,10 @@ export const ProjectManager = () => {
         }
 
         console.log('Deleting project row from projects_table...');
-        const { error } = await supabase.from('projects_table').delete().eq('id', id);
+        const { error } = await db.from('projects_table').delete().eq('id', id);
         
         if (error) {
-          console.error('Supabase delete error:', error);
+          console.error('Delete error:', error);
           throw error;
         }
         
@@ -129,7 +129,7 @@ export const ProjectManager = () => {
   };
 
   const toggleVisibility = async (entry: ProjectEntry) => {
-    const { error } = await supabase
+    const { error } = await db
       .from('projects_table')
       .update({ is_visible: !entry.is_visible })
       .eq('id', entry.id);
@@ -272,13 +272,13 @@ const ProjectForm = ({ entry, onSave, onCancel }: { entry: ProjectEntry, onSave:
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `projects/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await db.storage
         .from('project_cover')
         .upload(filePath, croppedBlob);
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: { publicUrl } } = db.storage
         .from('project_cover')
         .getPublicUrl(filePath);
 

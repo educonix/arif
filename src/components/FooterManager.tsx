@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../services/supabaseClient';
+import { db } from '../services/dbClient';
 import { Upload, Save, Image as ImageIcon, X } from 'lucide-react';
 import { ImageCropperModal } from './ImageCropperModal';
 
@@ -34,7 +34,7 @@ export const FooterManager = ({ settings, onUpdate }: { settings: any, onUpdate:
   const handleCropComplete = async (croppedBlob: Blob) => {
     setCropModalOpen(false);
     setSelectedImageSrc(null);
-    if (!supabase) return;
+    if (!db) return;
     
     setUploading(true);
     const fileExt = 'jpeg';
@@ -42,13 +42,13 @@ export const FooterManager = ({ settings, onUpdate }: { settings: any, onUpdate:
     const filePath = `footer/${fileName}`;
 
     try {
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await db.storage
         .from('footer_photo')
         .upload(filePath, croppedBlob);
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: { publicUrl } } = db.storage
         .from('footer_photo')
         .getPublicUrl(filePath);
 
@@ -66,7 +66,7 @@ export const FooterManager = ({ settings, onUpdate }: { settings: any, onUpdate:
     // Ensure we are updating the existing row. 
     // Usually site_settings has a single row, often with id 1 or similar.
     // If settings has an id, we use it.
-    const { error } = await supabase.from('site_settings').upsert(localSettings);
+    const { error } = await db.from('site_settings').upsert(localSettings);
     
     if (error) {
       alert('Error saving settings: ' + error.message);

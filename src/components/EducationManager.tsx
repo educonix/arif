@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../services/supabaseClient';
+import { db } from '../services/dbClient';
 import { Plus, Trash2, Edit2, Save, X, GraduationCap, Calendar, Hash, Award } from 'lucide-react';
 
 interface EducationEntry {
@@ -23,9 +23,9 @@ export const EducationManager = () => {
   }, []);
 
   const fetchEntries = async () => {
-    if (!supabase) return;
+    if (!db) return;
     setLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('education_table')
       .select('*')
       .order('sort_order', { ascending: true });
@@ -39,7 +39,7 @@ export const EducationManager = () => {
   };
 
   const handleSave = async (entry: EducationEntry) => {
-    if (!supabase) return;
+    if (!db) return;
     setLoading(true);
     try {
       const submissionData = {
@@ -53,12 +53,12 @@ export const EducationManager = () => {
 
       if (entry.id) {
         console.log('Updating education entry with ID:', entry.id);
-        const { error } = await supabase.from('education_table').update(submissionData).eq('id', entry.id);
+        const { error } = await db.from('education_table').update(submissionData).eq('id', entry.id);
         if (error) throw error;
         alert('Education entry updated successfully!');
       } else {
         console.log('Adding new education entry');
-        const { error } = await supabase.from('education_table').insert([submissionData]);
+        const { error } = await db.from('education_table').insert([submissionData]);
         if (error) throw error;
         alert('Education entry added successfully!');
       }
@@ -74,18 +74,18 @@ export const EducationManager = () => {
   };
 
   const handleDelete = async (id: any) => {
-    if (!supabase) {
-      console.error('Supabase client not initialized');
+    if (!db) {
+      console.error('Database client not initialized');
       return;
     }
     if (confirm('Are you sure you want to delete this education entry?')) {
       setLoading(true);
       try {
         console.log('Deleting education entry with ID:', id);
-        const { error } = await supabase.from('education_table').delete().eq('id', id);
+        const { error } = await db.from('education_table').delete().eq('id', id);
         
         if (error) {
-          console.error('Supabase delete error:', error);
+          console.error('Delete error:', error);
           throw error;
         }
         

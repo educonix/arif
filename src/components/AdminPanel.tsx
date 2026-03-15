@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '../services/supabaseClient';
+import { db } from '../services/dbClient';
 
 export const AdminPanel = () => {
   const [content, setContent] = useState({
@@ -10,11 +10,11 @@ export const AdminPanel = () => {
   });
 
   const handleUpdate = async (key: string, value: string) => {
-    if (!supabase) {
+    if (!db) {
       alert('Admin service is not configured.');
       return;
     }
-    const { error } = await supabase
+    const { error } = await db
       .from('site_content')
       .upsert({ key, value });
     if (error) console.error('Error updating content:', error);

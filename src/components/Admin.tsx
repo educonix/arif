@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '../services/supabaseClient';
+import { db } from '../services/dbClient';
 
 export const LoginModal = ({ isOpen, onClose, onLogin }: { isOpen: boolean, onClose: () => void, onLogin: () => void }) => {
   const [email, setEmail] = useState('');
@@ -9,7 +9,7 @@ export const LoginModal = ({ isOpen, onClose, onLogin }: { isOpen: boolean, onCl
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await db.auth.signInWithPassword({ email, password });
     if (error) {
       alert(error.message);
     } else {
@@ -40,7 +40,7 @@ export const AdminPanel = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
   if (!isOpen) return null;
 
   const handleUpdate = async () => {
-    const { error } = await supabase.from('site_settings').upsert({ id: 1, full_name: fullName, tagline: tagline });
+    const { error } = await db.from('site_settings').upsert({ id: 1, full_name: fullName, tagline: tagline });
     if (error) {
       alert(error.message);
     } else {

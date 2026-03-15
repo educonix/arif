@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, BookOpen, Briefcase, Image, Mail, Settings, LogOut, X, Menu } from 'lucide-react';
-import { supabase } from '../services/supabaseClient';
+import { db } from '../services/dbClient';
 import { AdminForm } from './AdminForm';
 import { EducationManager } from './EducationManager';
 import { ProjectManager } from './ProjectManager';
@@ -29,9 +29,9 @@ export const AdminDashboard = ({ onClose }: { onClose: () => void }) => {
   }, []);
 
   const loadSettings = async () => {
-    if (!supabase) return;
+    if (!db) return;
     setLoading(true);
-    const { data, error } = await supabase.from('site_settings').select('*');
+    const { data, error } = await db.from('site_settings').select('*');
     if (error) {
       console.error('Error loading settings:', error);
       setSettings({});
@@ -44,8 +44,8 @@ export const AdminDashboard = ({ onClose }: { onClose: () => void }) => {
   };
 
   const handleLogout = async () => {
-    if (supabase) {
-      await supabase.auth.signOut();
+    if (db) {
+      await db.auth.signOut();
     }
     onClose();
   };

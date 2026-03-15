@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '../services/supabaseClient';
+import { db } from '../services/dbClient';
 
 export const AdminLoginModal = ({ onClose, onLoginSuccess }: { onClose: () => void; onLoginSuccess: () => void }) => {
   const [email, setEmail] = useState('');
@@ -8,11 +8,11 @@ export const AdminLoginModal = ({ onClose, onLoginSuccess }: { onClose: () => vo
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!supabase) {
+    if (!db) {
       setError('Admin service is not configured.');
       return;
     }
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await db.auth.signInWithPassword({ email, password });
     if (error) setError(error.message);
     else onLoginSuccess();
   };

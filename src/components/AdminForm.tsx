@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { supabase } from '../services/supabaseClient';
+import { db } from '../services/dbClient';
 
 export const AdminForm = ({ title, description, fields, settings, onUpdate }: { title: string, description: string, fields: { key: string, label: string, type: 'text' | 'textarea' }[], settings: any, onUpdate: () => void }) => {
   const [localSettings, setLocalSettings] = useState(settings);
@@ -7,7 +7,7 @@ export const AdminForm = ({ title, description, fields, settings, onUpdate }: { 
 
   const save = async () => {
     setLoading(true);
-    const { error } = await supabase.from('site_settings').upsert(localSettings);
+    const { error } = await db.from('site_settings').upsert(localSettings);
     if (error) alert('Error saving settings: ' + error.message);
     else {
       alert('Settings saved successfully!');

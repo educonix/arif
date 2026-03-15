@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../services/supabaseClient';
+import { db } from '../services/dbClient';
 import { Upload, Save, User, Image as ImageIcon, X } from 'lucide-react';
 import { ImageCropperModal } from './ImageCropperModal';
 
@@ -35,7 +35,7 @@ export const ProfileManager = ({ settings, onUpdate }: { settings: any, onUpdate
   const handleCropComplete = async (croppedBlob: Blob) => {
     setCropModalOpen(false);
     setSelectedImageSrc(null);
-    if (!supabase) return;
+    if (!db) return;
     
     setUploading(true);
     const fileExt = 'jpeg'; // Blob is jpeg from cropper
@@ -43,13 +43,13 @@ export const ProfileManager = ({ settings, onUpdate }: { settings: any, onUpdate
     const filePath = `profile/${fileName}`;
 
     try {
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await db.storage
         .from('profile_photo')
         .upload(filePath, croppedBlob);
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: { publicUrl } } = db.storage
         .from('profile_photo')
         .getPublicUrl(filePath);
 
@@ -66,7 +66,7 @@ export const ProfileManager = ({ settings, onUpdate }: { settings: any, onUpdate
     setLoading(true);
     // Ensure we are updating the existing row. 
     // site_settings usually has a single row.
-    const { error } = await supabase.from('site_settings').upsert(localSettings);
+    const { error } = await db.from('site_settings').upsert(localSettings);
     
     if (error) {
       alert('Error saving settings: ' + error.message);

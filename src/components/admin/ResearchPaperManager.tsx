@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../services/supabaseClient';
+import { db } from '../../services/dbClient';
 import { ResearchPaper } from '../../types/research';
 import { MathEditor } from './MathEditor';
 import { Plus, Edit2, Trash2, Save, X, Image as ImageIcon } from 'lucide-react';
@@ -16,7 +16,7 @@ export const ResearchPaperManager: React.FC = () => {
 
   const fetchPapers = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('research_papers')
       .select('*')
       .order('created_at', { ascending: false });
@@ -47,10 +47,10 @@ export const ResearchPaperManager: React.FC = () => {
       paperData.id = crypto.randomUUID();
       paperData.created_at = new Date().toISOString();
       
-      const { error } = await supabase.from('research_papers').insert([paperData]);
+      const { error } = await db.from('research_papers').insert([paperData]);
       if (error) console.error('Error creating paper:', error);
     } else {
-      const { error } = await supabase
+      const { error } = await db
         .from('research_papers')
         .update(paperData)
         .eq('id', paperData.id);
@@ -65,7 +65,7 @@ export const ResearchPaperManager: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this paper?')) return;
     
-    const { error } = await supabase.from('research_papers').delete().eq('id', id);
+    const { error } = await db.from('research_papers').delete().eq('id', id);
     if (error) {
       console.error('Error deleting paper:', error);
     } else {

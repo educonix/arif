@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../services/supabaseClient';
+import { db } from '../services/dbClient';
 import { Plus, Trash2, Edit2, Save, X, Upload, Image, Star } from 'lucide-react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
@@ -35,7 +35,7 @@ export const ResearchManager = () => {
 
   const fetchEntries = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('research_papers')
       .select('*')
       .order('publish_date', { ascending: false });
@@ -86,13 +86,13 @@ export const ResearchManager = () => {
       };
 
       if (entry.id) {
-        const { error } = await supabase.from('research_papers').update(submissionData).eq('id', entry.id);
+        const { error } = await db.from('research_papers').update(submissionData).eq('id', entry.id);
         if (error) throw error;
         alert('Research paper updated!');
         setEditingEntry(null);
         fetchEntries();
       } else {
-        const { error } = await supabase.from('research_papers').insert([submissionData]);
+        const { error } = await db.from('research_papers').insert([submissionData]);
         if (error) throw error;
         alert('Research paper added!');
         setEditingEntry(null);
@@ -116,14 +116,14 @@ export const ResearchManager = () => {
           try {
             const path = post.cover_image.split('research_cover/').pop();
             if (path) {
-              await supabase.storage.from('research_cover').remove([path]);
+              await db.storage.from('research_cover').remove([path]);
             }
           } catch (e) {
             console.error('Error deleting image:', e);
           }
         }
 
-        const { error } = await supabase.from('research_papers').delete().eq('id', id);
+        const { error } = await db.from('research_papers').delete().eq('id', id);
         if (error) throw error;
         alert('Research paper deleted!');
         fetchEntries();
@@ -146,20 +146,20 @@ export const ResearchManager = () => {
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await db.storage
         .from('research_cover')
         .upload(filePath, file);
 
       if (uploadError) {
         // Fallback to project_cover if research_cover doesn't exist
         if (uploadError.message.includes('Bucket not found')) {
-           const { error: fallbackError } = await supabase.storage
+           const { error: fallbackError } = await db.storage
             .from('project_cover')
             .upload(`research_${filePath}`, file);
             
             if (fallbackError) throw fallbackError;
             
-            const { data: { publicUrl } } = supabase.storage
+            const { data: { publicUrl } } = db.storage
               .from('project_cover')
               .getPublicUrl(`research_${filePath}`);
               
@@ -169,7 +169,7 @@ export const ResearchManager = () => {
         throw uploadError;
       }
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: { publicUrl } } = db.storage
         .from('research_cover')
         .getPublicUrl(filePath);
 

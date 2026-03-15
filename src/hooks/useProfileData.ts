@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../services/supabaseClient';
+import { db } from '../services/dbClient';
 
 export const useProfileData = (key: string, defaultValue: any) => {
   const [data, setData] = useState(defaultValue);
@@ -8,20 +8,20 @@ export const useProfileData = (key: string, defaultValue: any) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data: supabaseData, error } = await supabase
+        const { data: dbData, error } = await db
           .from('site_content')
           .select('content')
           .eq('section', key)
           .single();
 
         if (error) {
-          console.log(`No data found in Supabase for ${key}, using default.`);
+          console.log(`No data found in database for ${key}, using default.`);
           setData(defaultValue);
-        } else if (supabaseData) {
-          setData(supabaseData.content);
+        } else if (dbData) {
+          setData(dbData.content);
         }
       } catch (err) {
-        console.error(`Error fetching ${key} from Supabase:`, err);
+        console.error(`Error fetching ${key} from database:`, err);
         setData(defaultValue);
       } finally {
         setLoading(false);

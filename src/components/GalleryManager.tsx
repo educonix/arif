@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../services/supabaseClient';
+import { db } from '../services/dbClient';
 import { Plus, Trash2, Edit2, Save, X, Upload, Eye, EyeOff, Image, Calendar, Hash } from 'lucide-react';
 import { ImageCropperModal } from './ImageCropperModal';
 
@@ -36,9 +36,9 @@ export const GalleryManager = () => {
   }, []);
 
   const fetchEntries = async () => {
-    if (!supabase) return;
+    if (!db) return;
     setLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('gallery_table')
       .select('*')
       .order('photo_date', { ascending: false })
@@ -68,7 +68,7 @@ export const GalleryManager = () => {
   const handleCropComplete = async (croppedBlob: Blob) => {
     setCropModalOpen(false);
     setSelectedImageSrc(null);
-    if (!supabase) return;
+    if (!db) return;
     
     setUploading(true);
     const fileExt = 'jpeg';
@@ -76,13 +76,13 @@ export const GalleryManager = () => {
     const filePath = `gallery/${fileName}`;
 
     try {
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await db.storage
         .from('gallery_photo')
         .upload(filePath, croppedBlob);
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: { publicUrl } } = db.storage
         .from('gallery_photo')
         .getPublicUrl(filePath);
 
@@ -97,7 +97,7 @@ export const GalleryManager = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!supabase) return;
+    if (!db) return;
 
     setLoading(true);
     try {
@@ -111,7 +111,7 @@ export const GalleryManager = () => {
 
       if (editingId) {
         console.log('Updating gallery item with ID:', editingId);
-        const { error } = await supabase
+        const { error } = await db
           .from('gallery_table')
           .update(submissionData)
           .eq('id', editingId);
@@ -119,7 +119,7 @@ export const GalleryManager = () => {
         alert('Gallery item updated successfully!');
       } else {
         console.log('Adding new gallery item');
-        const { error } = await supabase
+        const { error } = await db
           .from('gallery_table')
           .insert([submissionData]);
         if (error) throw error;
@@ -159,8 +159,8 @@ export const GalleryManager = () => {
   };
 
   const handleDelete = async (id: any) => {
-    if (!supabase) {
-      console.error('Supabase client not initialized');
+    if (!db) {
+      console.error('Database client not initialized');
       return;
     }
     if (!confirm('Are you sure you want to delete this photo?')) return;
@@ -178,7 +178,7 @@ export const GalleryManager = () => {
           const path = item.image_url.split('gallery_photo/').pop();
           if (path) {
             console.log('Deleting gallery image from storage:', path);
-            const { error: storageError } = await supabase.storage
+            const { error: storageError } = await db.storage
               .from('gallery_photo')
               .remove([path]);
             if (storageError) {
@@ -193,13 +193,13 @@ export const GalleryManager = () => {
       }
 
       console.log('Deleting gallery row from gallery_table...');
-      const { error } = await supabase
+      const { error } = await db
         .from('gallery_table')
         .delete()
         .eq('id', id);
       
       if (error) {
-        console.error('Supabase delete error:', error);
+        console.error('Delete error:', error);
         throw error;
       }
       
@@ -215,9 +215,9 @@ export const GalleryManager = () => {
   };
 
   const toggleVisibility = async (entry: GalleryEntry) => {
-    if (!supabase) return;
+    if (!db) return;
     try {
-      const { error } = await supabase
+      const { error } = await db
         .from('gallery_table')
         .update({ is_visible: !entry.is_visible })
         .eq('id', entry.id);

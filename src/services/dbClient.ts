@@ -311,4 +311,4 @@ const neonClient = {
   },
 };
 
-export const supabase: any = neonClient;
+export const db: any = neonClient;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../services/supabaseClient';
+import { db } from '../services/dbClient';
 import { Plus, Trash2, Edit2, Save, X, Upload, Eye, EyeOff, ExternalLink, Image, Calendar, Star } from 'lucide-react';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
@@ -31,7 +31,7 @@ export const BlogManager = () => {
 
   const fetchEntries = async () => {
     setLoading(true);
-    const { data, error } = await supabase
+    const { data, error } = await db
       .from('blog_posts')
       .select('*')
       .order('publish_date', { ascending: false });
@@ -61,13 +61,13 @@ export const BlogManager = () => {
       };
 
       if (entry.id) {
-        const { error } = await supabase.from('blog_posts').update(submissionData).eq('id', entry.id);
+        const { error } = await db.from('blog_posts').update(submissionData).eq('id', entry.id);
         if (error) throw error;
         alert('Blog post updated!');
         setEditingEntry(null);
         fetchEntries();
       } else {
-        const { error } = await supabase.from('blog_posts').insert([submissionData]);
+        const { error } = await db.from('blog_posts').insert([submissionData]);
         if (error) throw error;
         alert('Blog post added!');
         setIsAdding(false);
@@ -91,14 +91,14 @@ export const BlogManager = () => {
           try {
             const path = post.cover_image.split('blog_cover/').pop();
             if (path) {
-              await supabase.storage.from('blog_cover').remove([path]);
+              await db.storage.from('blog_cover').remove([path]);
             }
           } catch (e) {
             console.error('Error deleting image:', e);
           }
         }
 
-        const { error } = await supabase.from('blog_posts').delete().eq('id', id);
+        const { error } = await db.from('blog_posts').delete().eq('id', id);
         if (error) throw error;
         alert('Blog post deleted!');
         fetchEntries();
@@ -121,20 +121,20 @@ export const BlogManager = () => {
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError } = await db.storage
         .from('blog_cover')
         .upload(filePath, file);
 
       if (uploadError) {
         // Fallback to project_cover if blog_cover doesn't exist
         if (uploadError.message.includes('Bucket not found')) {
-           const { error: fallbackError } = await supabase.storage
+           const { error: fallbackError } = await db.storage
             .from('project_cover')
             .upload(`blog_${filePath}`, file);
             
             if (fallbackError) throw fallbackError;
             
-            const { data: { publicUrl } } = supabase.storage
+            const { data: { publicUrl } } = db.storage
               .from('project_cover')
               .getPublicUrl(`blog_${filePath}`);
               
@@ -144,7 +144,7 @@ export const BlogManager = () => {
         throw uploadError;
       }
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: { publicUrl } } = db.storage
         .from('blog_cover')
         .getPublicUrl(filePath);
 
